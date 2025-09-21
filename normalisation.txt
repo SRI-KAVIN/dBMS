@@ -1,0 +1,269 @@
+(1) FDs: AB → C, D → E, B → E
+-- Original relation
+CREATE TABLE R1 (
+    A CHAR(1),
+    B CHAR(1),
+    C CHAR(1),
+    D CHAR(1),
+    E CHAR(1),
+    PRIMARY KEY (A, B)  -- AB is candidate key
+);
+
+-- Decomposition into BCNF
+CREATE TABLE R1_DE1 (
+    D CHAR(1) PRIMARY KEY,
+    E CHAR(1)
+);
+
+CREATE TABLE R1_DE2 (
+    A CHAR(1),
+    B CHAR(1),
+    C CHAR(1),
+    D CHAR(1),
+    PRIMARY KEY (A, B),
+    FOREIGN KEY (D) REFERENCES R1_DE1(D)
+);
+
+
+(2) FDs: A → CD, B → DE
+
+-- Original relation
+CREATE TABLE R2 (
+    A CHAR(1),
+    B CHAR(1),
+    C CHAR(1),
+    D CHAR(1),
+    E CHAR(1),
+    PRIMARY KEY (A, B)
+);
+
+-- Decomposition into BCNF
+CREATE TABLE R2_DE1 (
+    A CHAR(1) PRIMARY KEY,
+    C CHAR(1),
+    D CHAR(1)
+);
+
+CREATE TABLE R2_DE2 (
+    B CHAR(1) PRIMARY KEY,
+    E CHAR(1)
+);
+
+CREATE TABLE R2_DE3 (
+    A CHAR(1),
+    B CHAR(1),
+    PRIMARY KEY (A, B),
+    FOREIGN KEY (A) REFERENCES R2_DE1(A),
+    FOREIGN KEY (B) REFERENCES R2_DE2(B)
+);
+
+
+
+(3) FDs: AB → C, C → D
+
+-- Original relation
+CREATE TABLE R3 (
+    A CHAR(1),
+    B CHAR(1),
+    C CHAR(1),
+    D CHAR(1),
+    E CHAR(1),
+    PRIMARY KEY (A, B, E)  -- Candidate key is ABE
+);
+
+-- Decomposition into BCNF
+CREATE TABLE R3_DE1 (
+    C CHAR(1) PRIMARY KEY,
+    D CHAR(1)
+);
+
+CREATE TABLE R3_DE2 (
+    A CHAR(1),
+    B CHAR(1),
+    C CHAR(1),
+    E CHAR(1),
+    PRIMARY KEY (A, B, E),
+    FOREIGN KEY (C) REFERENCES R3_DE1(C)
+);
+
+
+Part 3 – 3NF Decomposition (Canonical Cover)
+(1) FDs: A → C, B → E, C → D
+
+CREATE TABLE R4_DE1 (
+    A CHAR(1) PRIMARY KEY,
+    C CHAR(1)
+);
+
+CREATE TABLE R4_DE2 (
+    B CHAR(1) PRIMARY KEY,
+    E CHAR(1)
+);
+
+CREATE TABLE R4_DE3 (
+    C CHAR(1) PRIMARY KEY,
+    D CHAR(1)
+);
+
+CREATE TABLE R4_DE4 (
+    A CHAR(1),
+    B CHAR(1),
+    PRIMARY KEY (A, B),
+    FOREIGN KEY (A) REFERENCES R4_DE1(A),
+    FOREIGN KEY (B) REFERENCES R4_DE2(B)
+);
+
+
+(2) FDs: A → B, B → C, D → E, B → E
+
+CREATE TABLE R5_DE1 (
+    A CHAR(1) PRIMARY KEY,
+    B CHAR(1)
+);
+
+CREATE TABLE R5_DE2 (
+    B CHAR(1) PRIMARY KEY,
+    C CHAR(1),
+    E CHAR(1)
+);
+
+CREATE TABLE R5_DE3 (
+    D CHAR(1) PRIMARY KEY,
+    E CHAR(1)
+);
+
+CREATE TABLE R5_DE4 (
+    A CHAR(1),
+    D CHAR(1),
+    PRIMARY KEY (A, D),
+    FOREIGN KEY (A) REFERENCES R5_DE1(A),
+    FOREIGN KEY (D) REFERENCES R5_DE3(D)
+);
+
+Part 4 – Real-life Example
+
+Student relation
+
+CREATE TABLE Student (
+    ID INT,
+    name VARCHAR(50),
+    courseID INT,
+    year INT,
+    semester INT,
+    grade CHAR(2),
+    PRIMARY KEY (ID, courseID, year, semester)
+);
+
+-- Decomposition
+CREATE TABLE Student_Info (
+    ID INT PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+CREATE TABLE Student_Grades (
+    ID INT,
+    courseID INT,
+    year INT,
+    semester INT,
+    grade CHAR(2),
+    PRIMARY KEY (ID, courseID, year, semester),
+    FOREIGN KEY (ID) REFERENCES Student_Info(ID)
+);
+
+
+
+Instructor relation
+
+CREATE TABLE Instructor (
+    ID INT,
+    name VARCHAR(50),
+    deptname VARCHAR(50),
+    deptbudget INT,
+    PRIMARY KEY (ID)
+);
+
+-- Decomposition
+CREATE TABLE Department (
+    deptname VARCHAR(50) PRIMARY KEY,
+    deptbudget INT
+);
+
+CREATE TABLE Instructor_Info (
+    ID INT PRIMARY KEY,
+    name VARCHAR(50),
+    deptname VARCHAR(50),
+    FOREIGN KEY (deptname) REFERENCES Department(deptname)
+);
+
+
+
+
+
+
+
+
+
+
+
+1. AB → C, D → E, B → E
+-- Decomposed Tables
+INSERT INTO R1_DE1 VALUES ('D1','E1'), ('D2','E2');
+
+INSERT INTO R1_DE2 VALUES ('A1','B1','C1','D1'),
+                          ('A2','B2','C2','D2');
+
+
+2. A → CD, B → DE
+-- Decomposed Tables
+INSERT INTO R2_DE1 VALUES ('A1','C1','D1'), ('A2','C2','D2');
+
+INSERT INTO R2_DE2 VALUES ('B1','E1'), ('B2','E2');
+
+INSERT INTO R2_DE3 VALUES ('A1','B1'), ('A2','B2');
+
+
+3. AB → C, C → D
+-- Decomposed Tables
+INSERT INTO R3_DE1 VALUES ('C1','D1'), ('C2','D2');
+
+INSERT INTO R3_DE2 VALUES ('A1','B1','C1','E1'),
+                          ('A2','B2','C2','E2');
+
+
+4. Canonical Cover → 3NF
+(1) A → C, B → E, C → D
+INSERT INTO R4_DE1 VALUES ('A1','C1'), ('A2','C2');
+
+INSERT INTO R4_DE2 VALUES ('B1','E1'), ('B2','E2');
+
+INSERT INTO R4_DE3 VALUES ('C1','D1'), ('C2','D2');
+
+INSERT INTO R4_DE4 VALUES ('A1','B1'), ('A2','B2');
+
+(2) A → B, B → C, D → E, B → E
+INSERT INTO R5_DE1 VALUES ('A1','B1'), ('A2','B2');
+
+INSERT INTO R5_DE2 VALUES ('B1','C1','E1'), ('B2','C2','E2');
+
+INSERT INTO R5_DE3 VALUES ('D1','E1'), ('D2','E2');
+
+INSERT INTO R5_DE4 VALUES ('A1','D1'), ('A2','D2');
+
+Student
+-- Base
+INSERT INTO Student_Info VALUES (1,'Alice'), (2,'Bob');
+
+INSERT INTO Student_Grades VALUES 
+(1,101,2024,1,'A'),
+(1,102,2024,2,'B'),
+(2,101,2024,1,'C'),
+(2,103,2024,2,'B');
+
+Instructor
+INSERT INTO Department VALUES ('CS',50000), ('Math',40000);
+
+INSERT INTO Instructor_Info VALUES 
+(1,'Dr. Smith','CS'),
+(2,'Dr. John','Math');
+
+
