@@ -1,0 +1,88 @@
+MongoDB Lab Exercise Solutions
+
+1. Create a student’s collection and perform CRUD operations with Projections
+// Create and insert students
+db.students.insertMany([
+  { _id: 1, name: "Kavin", age: 21, dept: "CSE", marks: 88 },
+  { _id: 2, name: "Priya", age: 22, dept: "IT", marks: 91 },
+  { _id: 3, name: "Arun", age: 20, dept: "ECE", marks: 76 }
+]);
+
+// Update
+db.students.updateOne({ name: "Arun" }, { $set: { marks: 80 } });
+
+// Delete
+db.students.deleteOne({ name: "Priya" });
+
+// Query
+db.students.find({ dept: "CSE" });
+
+// Projection (only name and marks)
+db.students.find({}, { name: 1, marks: 1, _id: 0 });
+
+2. Query selectors (comparison & logical)
+// Comparison: students with marks > 85
+db.students.find({ marks: { $gt: 85 } });
+
+// Logical: students with dept = "CSE" OR marks > 80
+db.students.find({ $or: [{ dept: "CSE" }, { marks: { $gt: 80 } }] });
+
+3. Display first 5 documents
+db.students.find().limit(5);
+
+4. Aggregation operators
+db.students.aggregate([
+  {
+    $group: {
+      _id: "$dept",
+      avgMarks: { $avg: "$marks" },
+      minMarks: { $min: "$marks" },
+      maxMarks: { $max: "$marks" },
+      allNames: { $push: "$name" },
+      uniqueNames: { $addToSet: "$name" }
+    }
+  }
+]);
+
+5. Different types of indexes
+// Unique index on roll number
+db.students.createIndex({ _id: 1 }, { unique: true });
+
+// Sparse index on optional field (email)
+db.students.createIndex({ email: 1 }, { sparse: true });
+
+// Compound index on dept and marks
+db.students.createIndex({ dept: 1, marks: -1 });
+
+// Multikey index (for array field)
+db.students.createIndex({ hobbies: 1 });
+
+6. Projection operators ($elemMatch, $slice)
+// $elemMatch - select specific element from array
+db.students.find(
+  { hobbies: { $exists: true } },
+  { hobbies: { $elemMatch: { $eq: "Cricket" } } }
+);
+
+// $slice - return only first 2 hobbies
+db.students.find(
+  {},
+  { name: 1, hobbies: { $slice: 2 } }
+);
+
+7. Text Search in catalogue collection
+// Create text index
+db.catalogue.createIndex({ description: "text" });
+
+// Search for word "laptop"
+db.catalogue.find({ $text: { $search: "laptop" } });
+
+8. Excluding certain words/phrases
+// Exclude documents containing word "mobile"
+db.catalogue.find({ $text: { $search: "-mobile" } });
+
+// Exclude documents containing phrase "old model"
+db.catalogue.find({ $text: { $search: "\"old model\"" } });
+
+
+
